@@ -2,23 +2,38 @@ import RestaurentCard from "./ResaturentCard";
 import Shimmer from "./Shimmer";
 import { Link } from "react-router-dom";
 import useOnlineStatus from "../utils/useOnlineStatus";
-import useBody from "../utils/useBody";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
+import { API_url } from "../utils/constants";
 
 const Body = () => {
-  const [searchText, setSearchText] = useState(" ");
-  const [searchedRestaurent, ListofRestaurent] = useBody();
+    const [searchText, setSearchText] = useState(" ");
+    const [ListofRestaurent, setListofRestaurent] = useState([]);  
+    const [searchedRestaurent, setSearchedRestaurent] = useState([]);
+  
+    useEffect(() => {
+      fetchData();
+    }, []);
+  
+    const fetchData = async () => {
+      const res = await fetch(API_url);
+      const json = await res.json();
+  
+      setListofRestaurent(
+        json.data.cards[4].card.card.gridElements.infoWithStyle.restaurants
+      );
+      setSearchedRestaurent(
+        json.data.cards[4].card.card.gridElements.infoWithStyle.restaurants
+      );
+    };
+
   const onlineStatus = useOnlineStatus();
 
-  if (onlineStatus === false)
-    return <h1> No internet!! please check your internet...</h1>;
+  if (!onlineStatus) {
+    return <h1>No internet! Please check your connection...</h1>;
+  }
 
-
-
-
-
-
-
+  
   return ListofRestaurent.length === 0 ? (
     <Shimmer />
   ) : (
@@ -28,11 +43,11 @@ const Body = () => {
           <input
             className="border-2 border-black"
             type="text"
+            
             value={searchText}
-            onChange={(e) => {
-              setSearchText(e.target.value);
-            }}
-          ></input>
+            placeholder="Search restaurants..."
+            onChange={(e) => setSearchText(e.target.value)}
+          />
 
           <button
             className="bg-green-200 m-3 px-4 py-1 rounded-lg"
@@ -77,7 +92,7 @@ const Body = () => {
           return (
             <Link to={"restaurents/" + res.info.id } key={res.info.id} >
               <RestaurentCard
-                key={res.info.id}
+                // key={res.info.id}
                 resNames={res.info.name}
                 avgRating={res.info.avgRating}
                 costForTwo={res.info.costForTwo}
